@@ -1,5 +1,9 @@
 import { stripe } from '@/lib/stripe';
-import { ImageContainer, ProductDetails, ProductContainer } from '@/styles/pages/product';
+import {
+  ImageContainer,
+  ProductDetails,
+  ProductContainer,
+} from '@/styles/pages/product';
 import { GetStaticProps, GetStaticPaths } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -12,16 +16,23 @@ interface ProductProps {
     imageUrl: string;
     price: string;
     description: string | null;
+    defaultPriceId: string
   };
 }
 
 export default function Product({ product }: ProductProps) {
+
+  function handlerBuyProduct() {
+    console.log(product.defaultPriceId);
+    
+  }
+
   const { query } = useRouter();
 
   return (
-    <ProductContainer>  
+    <ProductContainer>
       <ImageContainer>
-        <Image src={product.imageUrl} width={520} height={480} alt=''/>
+        <Image src={product.imageUrl} width={520} height={480} alt="" />
       </ImageContainer>
 
       <ProductDetails>
@@ -29,7 +40,7 @@ export default function Product({ product }: ProductProps) {
         <span>{product.price}</span>
 
         <p>{product.description}</p>
-        <button>Comprar Agora</button>
+        <button onClick={handlerBuyProduct}>Comprar Agora</button>
       </ProductDetails>
     </ProductContainer>
   );
@@ -47,7 +58,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps<ProductProps, { id: string }> = async ({ params }) => {
+export const getStaticProps: GetStaticProps<
+  ProductProps,
+  { id: string }
+> = async ({ params }) => {
   if (!params || typeof params.id !== 'string') {
     return {
       notFound: true,
@@ -75,6 +89,7 @@ export const getStaticProps: GetStaticProps<ProductProps, { id: string }> = asyn
               currency: 'BRL',
             }).format(price.unit_amount / 100)
           : '0',
+        defaultPriceId: price.id
       },
     },
     revalidate: 60 * 60 * 1, // 1 hour
