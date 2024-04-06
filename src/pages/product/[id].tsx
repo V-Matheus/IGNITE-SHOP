@@ -4,9 +4,10 @@ import {
   ProductDetails,
   ProductContainer,
 } from '@/styles/pages/product';
+import axios from 'axios';
 import { GetStaticProps, GetStaticPaths } from 'next';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
+import { useState } from 'react';
 import Stripe from 'stripe';
 
 interface ProductProps {
@@ -16,18 +17,29 @@ interface ProductProps {
     imageUrl: string;
     price: string;
     description: string | null;
-    defaultPriceId: string
+    defaultPriceId: string;
   };
 }
 
 export default function Product({ product }: ProductProps) {
+  const [isCreatedCheckoutSession, setIsCreatedCheckoutSession] =
+    useState(false);
 
-  function handlerBuyProduct() {
-    console.log(product.defaultPriceId);
-    
+  async function handlerBuyProduct() {
+    try {
+      setIsCreatedCheckoutSession(true);
+      const response = await axios.post('/api/checkout', {
+        priceId: product.defaultPriceId,
+      });
+
+      const { checkoutUrl } = response.data;
+
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      setIsCreatedCheckoutSession(false);
+      alert('Falha ao redirecionar ao checkout');
+    }
   }
-
-  const { query } = useRouter();
 
   return (
     <ProductContainer>
@@ -40,7 +52,7 @@ export default function Product({ product }: ProductProps) {
         <span>{product.price}</span>
 
         <p>{product.description}</p>
-        <button onClick={handlerBuyProduct}>Comprar Agora</button>
+        <button disabled={isCreatedCheckoutSession} onClick={handlerBuyProduct}>Comprar Agora</button>
       </ProductDetails>
     </ProductContainer>
   );
@@ -89,7 +101,7 @@ export const getStaticProps: GetStaticProps<
               currency: 'BRL',
             }).format(price.unit_amount / 100)
           : '0',
-        defaultPriceId: price.id
+        defaultPriceId: price.id,
       },
     },
     revalidate: 60 * 60 * 1, // 1 hour
