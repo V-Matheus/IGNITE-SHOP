@@ -36,9 +36,6 @@ export default function Product({ product }: ProductProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  // Aqui você deve buscar os IDs dos produtos disponíveis
-  // na sua fonte de dados (como o Stripe)
-  // e retornar os paths possíveis para as páginas dinâmicas
   const response = await stripe.products.list();
   const paths = response.data.map((product) => ({
     params: { id: product.id },
@@ -46,7 +43,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   return {
     paths,
-    fallback: false, // Ou true, dependendo da sua necessidade
+    fallback: true,
   };
 };
 
