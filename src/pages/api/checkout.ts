@@ -1,5 +1,5 @@
 import { stripe } from '@/lib/stripe';
-import { NextApiRequest, NextApiResponse } from 'next';
+import {  NextApiRequest, NextApiResponse } from 'next';
 
 export default async function hendler(
   req: NextApiRequest,
@@ -7,15 +7,14 @@ export default async function hendler(
 ) {
   const { priceId } = req.body;
 
-  if(req.method !== 'POST') {
-    return res.status(405).json({error: 'Method not allowed.'})
-
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed.' });
   }
 
-  if(!priceId) {
-    return res.status(400).json({error: 'Price not Found.'})
+  if (!priceId) {
+    return res.status(400).json({ error: 'Price not Found.' });
   }
-  const success_url = `${process.env.NEXT_URL}/success`;
+  const success_url = `${process.env.NEXT_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancel_url = `${process.env.NEXT_URL}/`;
 
   const checkoutSection = await stripe.checkout.sessions.create({
